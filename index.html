@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Para Mamá ✍️</title>
+  <style>
+    :root {
+      --primary: #6a0dad;
+      --secondary: #d63384;
+      --paper: #d302f4;
+      --bg-gradient: linear-gradient(135deg, #fbc2eb 0%, #a18cd1 50%, #ffd1ff 100%);
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      /* Evita el rebote elástico en iOS */
+      position: fixed;
+      width: 100%;
+      height: 100%;
+    }
+
+    .card {
+      width: 85%;
+      max-width: 400px;
+      background: rgba(206, 159, 255, 0.92);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px); /* Necesario para Safari/iPhone */
+      border-radius: 25px;
+      padding: 25px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+      text-align: center;
+      z-index: 10;
+    }
+
+    .header-emojis { font-size: 45px; display: block; margin-bottom: 5px; }
+
+    h1 { color: var(--primary); font-size: 24px; margin: 10px 0; }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 18px;
+      font-size: 17px; /* Tamaño ideal para evitar zoom en iOS */
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(90deg, #ff69b4, #8a2be2);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent; /* Quita el recuadro gris al tocar en iPhone */
+      box-shadow: 0 8px 15px rgba(214, 51, 132, 0.2);
+    }
+
+    .scroll-container {
+      margin-top: 15px;
+      background: var(--paper);
+      border-radius: 15px;
+      overflow: hidden;
+      max-height: 0;
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0;
+    }
+
+    .scroll-container.open {
+      max-height: 350px; /* Ajustado para pantallas de iPhone */
+      opacity: 1;
+      padding: 15px;
+      border: 1px solid #e2d1a6;
+      overflow-y: auto; /* Permite scroll si el texto es largo */
+      -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+    }
+
+    #typewriter {
+      text-align: left;
+      color: #4a3728;
+      line-height: 1.6;
+      font-size: 16px;
+      white-space: pre-wrap;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      background-color: var(--secondary);
+      animation: blink 0.7s infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .float { position: absolute; font-size: 35px; animation: float 5s infinite ease-in-out; z-index: 1; pointer-events: none; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    
+    .heart { position: fixed; top: -10vh; pointer-events: none; animation: fall linear forwards; z-index: 100; }
+    @keyframes fall { to { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <div class="float" style="top:8%; left:8%;">🦄</div>
+  <div class="float" style="top:12%; right:8%; animation-delay:2s;">🐮</div>
+
+  <div class="card">
+    <span class="header-emojis">🐮🦄💜</span>
+    <h1>Para mi Mamá</h1>
+    <p style="color: var(--secondary); font-size: 14px; margin-bottom: 15px;">Pulsa para abrir tu regalo</p>
+
+    <button onclick="handleLetter()" id="btn">Leer mi carta 💌</button>
+
+    <div class="scroll-container" id="scroll">
+      <div id="typewriter"></div><span class="cursor" id="cursor" style="display:none;">|</span>
+    </div>
+  </div>
+
+  <script>
+    const textoCarta = `Mami 💜,
+
+Hoy quiero decirte algo que quizá no digo lo suficiente...
+
+Gracias por ser mi refugio y mi fuerza. Eres como un unicornio mágico 🦄 que hace posible lo imposible, y como una vaquita 🐮 que me da paz.
+
+Si algún día soy la mitad de increíble que tú, ya habré ganado. Gracias por no soltarme nunca.
+
+Te amo con todo mi ser. ✨
+
+Con amor, Tu hijo 💜`;
+
+    let isTyping = false;
+    let hasFinished = false;
+    const audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a9f0c2.mp3?filename=soft-piano-ambient-110397.mp3");
+    audio.volume = 0.3;
+
+    function handleLetter() {
+      // Intentar reproducir audio inmediatamente (REQUERIDO POR IOS)
+      audio.play().catch(() => { console.log("Audio esperando interacción"); });
+
+      const scroll = document.getElementById("scroll");
+      const btn = document.getElementById("btn");
+      const typewriterElement = document.getElementById("typewriter");
+      const cursor = document.getElementById("cursor");
+
+      if (!isTyping && !hasFinished) {
+        scroll.classList.add("open");
+        btn.innerText = "Escribiendo...";
+        btn.disabled = true;
+        cursor.style.display = "inline-block";
+        
+        // Pequeño delay para que el pergamino abra antes de escribir
+        setTimeout(() => {
+            typeWriter(textoCarta, 0);
+        }, 800);
+        
+        startHearts();
+      } else if (hasFinished) {
+        scroll.classList.remove("open");
+        setTimeout(() => {
+            typewriterElement.innerHTML = "";
+            btn.innerText = "Volver a leer 💌";
+            hasFinished = false;
+            audio.pause();
+            audio.currentTime = 0;
+        }, 800);
+      }
+    }
+
+    function typeWriter(text, i) {
+      isTyping = true;
+      if (i < text.length) {
+        document.getElementById("typewriter").innerHTML += text.charAt(i);
+        // Desplazar hacia abajo automáticamente si el texto es largo
+        const scrollDiv = document.getElementById("scroll");
+        scrollDiv.scrollTop = scrollDiv.scrollHeight;
+        
+        setTimeout(() => typeWriter(text, i + 1), 50);
+      } else {
+        isTyping = false;
+        hasFinished = true;
+        document.getElementById("btn").disabled = false;
+        document.getElementById("btn").innerText = "Cerrar con amor 💜";
+        document.getElementById("cursor").style.display = "none";
+      }
+    }
+
+    function startHearts() {
+      const heartInterval = setInterval(() => {
+        if (!document.getElementById("scroll").classList.contains("open")) {
+            clearInterval(heartInterval);
+            return;
+        }
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.innerText = ["💖", "💜", "✨", "🌸"][Math.floor(Math.random() * 4)];
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.fontSize = (Math.random() * 20 + 15) + "px";
+        heart.style.animationDuration = (Math.random() * 2 + 3) + "s";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+      }, 450);
+    }
+  </script>
+</body>
+</html>
